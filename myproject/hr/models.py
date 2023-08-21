@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 
 # Create your models here.
@@ -16,3 +18,30 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+class Compensation(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+class Employee(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    contact = models.OneToOneField(Contact, on_delete=models.SET_NULL, null=True) #contact 지워져도 employee 연결된 안지워짐
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, default= '' ) # department 지워지면 연결된 employee 모두 삭제됨
+    compensations = models.ManyToManyField(Compensation)
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+
+class Job(models.Model):
+    title = models.CharField(max_length=255)
+    employees = models.ManyToManyField(Employee, through='Assignment')
+
+    def __str__(self):
+        return self.title
+
+class Assignment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='assignment')
+    position = models.ForeignKey(Job, on_delete=models.CASCADE)
+    begin_date = models.DateField()
+    end_date = models.DateField(default = date(9999,12,31))
